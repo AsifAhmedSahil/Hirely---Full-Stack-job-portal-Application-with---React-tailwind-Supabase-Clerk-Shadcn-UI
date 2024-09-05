@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 // import { Button } from "./ui/button";
 import {
   SignedIn,
@@ -9,14 +9,24 @@ import {
 } from "@clerk/clerk-react";
 import { Button } from "./ui/button";
 import { BriefcaseBusiness, Heart, PenBox } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const Navbar = () => {
   const [showSignIn,setShowSignIn] = useState(false)
 
+  const [search, setSearch] = useSearchParams();
+  // const { user } = useUser();
+
+  useEffect(() => {
+    if (search.get("sign-in")) {
+      setShowSignIn(true);
+    }
+  }, [search]);
+
   const handleOverlayClick = (e) =>{
     if(e.target === e.currentTarget){
       setShowSignIn(false)
+      setSearch({})
     }
   }
 
