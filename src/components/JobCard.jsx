@@ -1,9 +1,18 @@
 /* eslint-disable react/prop-types */
 import { useUser } from "@clerk/clerk-react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 import { Heart, MapPinIcon, Trash2Icon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
+import { savedJobs } from "@/api/apiJobs";
+import useFetch from "@/hooks/use-fetch";
+import { useEffect, useState } from "react";
 
 const JobCard = ({
   job,
@@ -11,7 +20,33 @@ const JobCard = ({
   savedInit = false,
   onJobSaved = () => {},
 }) => {
+  const [saved, setSaved] = useState(savedInit);
   const { user } = useUser();
+
+  const {
+    fn: fnSavedJobs,
+    data: savedJobsData,
+    loading: loadingSavedJobs,
+  } = useFetch(savedJobs, {
+    alreadySaved: saved,
+  });
+
+  const handleSaveJob = async () => {
+    await fnSavedJobs({
+      user_id: user.id,
+      job_id: job.id,
+    });
+    onJobSaved();
+  };
+
+  useEffect(() => {
+    // Ensure savedJobsData is not null or undefined
+    if (savedJobsData && Array.isArray(savedJobsData)) {
+      setSaved(savedJobsData.length > 0);
+    } else {
+      setSaved(false); // Or some default value if you want
+    }
+  }, [savedJobsData]);
 
   return (
     <Card className="flex flex-col">
@@ -42,9 +77,24 @@ const JobCard = ({
 
       <CardFooter className="flex gap-2">
         <Link className="flex-1" to={`/job/${job.id}`}>
-          <Button className="w-full" variant="secondary">More Details</Button>
+          <Button className="w-full" variant="secondary">
+            More Details
+          </Button>
         </Link>
-        <Heart fill="red" size={15} stroke="red"/>
+        {!isMyJob && (
+          <Button
+            variant="outline"
+            className="w-15"
+            onClick={handleSaveJob}
+            disabled={loadingSavedJobs}
+          >
+            {saved ? (
+              <Heart fill="red" size={15} stroke="red" />
+            ) : (
+              <Heart size={15} />
+            )}
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

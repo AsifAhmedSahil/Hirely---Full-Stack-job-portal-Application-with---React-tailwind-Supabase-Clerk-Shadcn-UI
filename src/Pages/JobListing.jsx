@@ -52,7 +52,7 @@ const JobListing = () => {
             {
               Jobs?.length ? (
                 Jobs.map((job) =>{
-                  return <JobCard key={job.id} job={job}/>
+                  return <JobCard key={job.id} job={job} savedInit={job?.saved?.length >0}/>
                 })
               ) : (
                 <div>No Jobs Found!</div>
