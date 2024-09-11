@@ -1,4 +1,5 @@
 import { getSingleJob, updateHiringStatus } from "@/api/apiJobs"
+import ApplyJob from "@/components/apply-job"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import useFetch from "@/hooks/use-fetch"
 import { useUser } from "@clerk/clerk-react"
@@ -85,7 +86,7 @@ const Job = () => {
       {/* hiring status */}
 
       {loadingHiringStatus && <BarLoader className="mb-4" width={"100%"} color="#36d7b7" />}
-      {jobs?.recruiter_id === user?.id && (
+      {jobs?.recruiter_id !== user?.id && (
         <Select onValueChange={handleStatusChange}>
           <SelectTrigger
             className={`w-full ${jobs?.isOpen ? "bg-green-950" : "bg-red-950"}`}
@@ -109,6 +110,15 @@ const Job = () => {
       <p className="sm:text-lg ">{jobs?.description}</p>
       <h1 className="text-2xl lg:text-3xl font-bold">What we are looking for</h1>
       <MarkdownEditor.Markdown source={jobs?.requirements} className="bg-transparent sm:text-lg"/>
+
+      {jobs?.recruiter_id === user?.id && (
+        <ApplyJob
+          job={jobs}
+          user={user}
+          fetchJob={fnJobs}
+          applied={jobs?.applications?.find((ap) => ap.candidate_id === user.id)}
+        />
+      )}
     </div>
   )
 }
