@@ -1,8 +1,9 @@
-import { getSingleJobs } from "@/api/apiJobs"
+import { getSingleJob, updateHiringStatus } from "@/api/apiJobs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import useFetch from "@/hooks/use-fetch"
 import { useUser } from "@clerk/clerk-react"
 import MarkdownEditor from "@uiw/react-markdown-editor"
-import { Briefcase, DoorClosed, DoorOpen, MapPin, MapPinIcon } from "lucide-react"
+import { Briefcase, DoorClosed, DoorOpen,  MapPinIcon } from "lucide-react"
 import { useEffect } from "react"
 import { useParams } from "react-router-dom"
 import { BarLoader } from "react-spinners"
@@ -16,9 +17,23 @@ const Job = () => {
     loading: loadingJobs,
     data: jobs,
     fn: fnJobs,
-  } = useFetch(getSingleJobs, {
-    job_id:id
+  } = useFetch(getSingleJob, {
+    job_id: id,
   });
+
+  const { loading: loadingHiringStatus, fn: fnHiringStatus } = useFetch(
+    updateHiringStatus,
+    {
+      job_id: id,
+    }
+  );
+
+
+  const handleStatusChange = (value) => {
+    const isOpen = value === "open";
+    fnHiringStatus(isOpen).then(() => fnJobs());
+  };
+  
 
   console.log(jobs)
 
@@ -68,6 +83,27 @@ const Job = () => {
       </div>
 
       {/* hiring status */}
+
+      {loadingHiringStatus && <BarLoader className="mb-4" width={"100%"} color="#36d7b7" />}
+      {jobs?.recruiter_id === user?.id && (
+        <Select onValueChange={handleStatusChange}>
+          <SelectTrigger
+            className={`w-full ${jobs?.isOpen ? "bg-green-950" : "bg-red-950"}`}
+          >
+            <SelectValue
+              placeholder={
+                "Hiring Status " + (jobs?.isOpen ? "( Open )" : "( Closed )")
+              }
+            />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="open">Open</SelectItem>
+            <SelectItem value="closed">Closed</SelectItem>
+          </SelectContent>
+        </Select>
+      )}
+
+
 
       <h1 className="text-2xl lg:text-3xl font-bold">About the jobs</h1>
       <p className="sm:text-lg ">{jobs?.description}</p>
